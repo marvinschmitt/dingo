@@ -3,6 +3,7 @@ import torch
 from dingo.core.posterior_models.normalizing_flow import NormalizingFlow
 from dingo.core.posterior_models.flow_matching import FlowMatching
 from dingo.core.posterior_models.score_matching import ScoreDiffusion
+from dingo.core.posterior_models.consistency_model import ConsistencyModel
 
 
 # TODO: where to put this to avoid cyclic imports?
@@ -28,6 +29,7 @@ def build_model_from_kwargs(filename=None, settings=None, **kwargs):
         "normalizing_flow": NormalizingFlow,
         "flow_matching": FlowMatching,
         "score_matching": ScoreDiffusion,
+        "consistency_model": ConsistencyModel,
     }
 
     if filename is not None:

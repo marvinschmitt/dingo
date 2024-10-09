@@ -79,6 +79,7 @@ def prepare_training_new(train_settings: dict, train_dir: str, local_settings: d
             "normalizing_flow",
             "flow_matching",
             "score_matching",
+            "consistency_model",
         ]:
             set_train_transforms(
                 wfd,
@@ -94,7 +95,7 @@ def prepare_training_new(train_settings: dict, train_dir: str, local_settings: d
             }
         else:
             raise NotImplementedError(
-                "Only normalizing flow, score- and flow-matching is implemented at this time."
+                "Only normalizing flow, score- and flow-matching, and consistency models are implemented at this time."
             )
 
     else:
@@ -416,3 +417,9 @@ def train_local():
             print("All training stages complete.")
     else:
         print("Program terminated due to runtime limit.")
+
+def main():
+    train_local()
+
+if __name__ == "__main__":
+    main()
