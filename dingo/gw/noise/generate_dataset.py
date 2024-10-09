@@ -112,3 +112,9 @@ def generate_dataset():
             run = settings["dataset_settings"]["observing_run"]
             filename = join(data_dir, f"asds_{run}.hdf5")
         dataset.to_file(filename)
+
+def main():
+    generate_dataset()
+
+if __name__ == "__main__":
+    main()

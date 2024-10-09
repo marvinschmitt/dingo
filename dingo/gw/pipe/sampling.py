@@ -16,7 +16,8 @@ from dingo.gw.pipe.parser import create_parser
 
 class SamplingInput(Input):
     def __init__(self, args, unknown_args):
-        super().__init__(args, unknown_args)
+        # super().__init__(args, unknown_args)
+        super().__init__()
 
         # Generic initialisation
         self.meta_data = dict()
@@ -189,3 +190,6 @@ def main():
     analysis = SamplingInput(args, unknown_args)
     analysis.run_sampler()
     sys.exit(0)
+
+if __name__ == "__main__":
+    main()
