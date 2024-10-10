@@ -85,11 +85,11 @@ model:
       s0: 10
       s1: 50
       tmax: 200
-      epsilon: 1e-3
+      epsilon: 0.001
       sigma2: 0.25
   type: consistency_model
 training:
-  evaluate: true
+  evaluate: false
   stage_0:
     asd_dataset_path: dev_scripts/datasets/asd_dataset_GW150914.hdf5
     batch_size: 128
