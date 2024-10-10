@@ -81,6 +81,12 @@ model:
     theta_with_glu: true
     time_prior_exponent: 1
     type: DenseResidualNet
+    consistency_args:
+      s0: 10
+      s1: 50
+      tmax: 200
+      epsilon: 1e-3
+      sigma2: 0.25
   type: consistency_model
 training:
   evaluate: true
