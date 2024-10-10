@@ -12,8 +12,22 @@ class ConsistencyModel(Base):
     Class for consistency model.
     """
     def __init__(self, **kwargs):
-        self.total_steps = 1000  # FIXME: hardcoded
+        # self.total_steps = 1000  # FIXME: hardcoded
         super().__init__(**kwargs)
+        
+        # Compute number of gradient steps for the consistency model schedulers
+        self.train_budget = self.metadata["train_settings"]["data"]["total_budget"] * self.metadata["train_settings"]["data"]["train_fraction"]
+        self.total_steps = 0
+        i = 0
+        while 1:
+            key = f"stage_{i}"
+            if key in self.metadata["train_settings"]["training"]:
+                stage_epochs = self.metadata["train_settings"]["training"][key]["epochs"]
+                stage_batch_size = self.metadata["train_settings"]["training"][key]["batch_size"]
+                self.total_steps += stage_epochs * self.train_budget // stage_batch_size
+                i += 1
+            else:
+                break
         
         self.theta_dim = self.metadata["train_settings"]["model"]["posterior_kwargs"]["input_dim"]
         self.s0 = torch.tensor(self.model_kwargs["posterior_kwargs"]["consistency_args"]["s0"], dtype=torch.float32)

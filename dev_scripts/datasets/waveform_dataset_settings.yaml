@@ -26,10 +26,10 @@ intrinsic_prior:
   luminosity_distance: 100.0 # Mpc
   geocent_time: 0.0 # s
 
-num_samples: 10_000 # 5_000_000
+num_samples: 100_000 # 5_000_000
 
 compression:
   svd:
-    num_training_samples: 5_000
-    num_validation_samples: 1_000
+    num_training_samples: 20_000
+    num_validation_samples: 2_000
     size: 300

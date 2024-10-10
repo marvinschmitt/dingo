@@ -29,6 +29,7 @@ data:
   ref_time: 1126259462.391
   svd_size_update: 150
   train_fraction: 0.95
+  total_budget: 100_000
   waveform_dataset_path: dev_scripts/datasets/waveform_dataset.hdf5
   window:
     T: 8.0
@@ -53,7 +54,7 @@ model:
     svd:
       num_training_samples: 5_000
       num_validation_samples: 1_000
-      size: 300
+      size: 150
   posterior_kwargs:
     activation: gelu
     batch_norm: true
@@ -61,9 +62,20 @@ model:
     dropout: 0.0
     hidden_dims:
       - 4096
+      - 4096
+      - 2048
+      - 2048
       - 1024
+      - 1024
+      - 512
+      - 512
+      - 256
       - 256
       - 64
+      - 64
+      - 32
+      - 32
+      - 16
       - 16
     sigma_min: 0.001
     theta_embedding_kwargs:
@@ -72,6 +84,8 @@ model:
         hidden_dims:
           - 16
           - 32
+          - 64
+          - 128
           - 256
         output_dim: 256
         type: DenseResidualNet
@@ -92,8 +106,8 @@ training:
   evaluate: false
   stage_0:
     asd_dataset_path: dev_scripts/datasets/asd_dataset_GW150914.hdf5
-    batch_size: 128
-    epochs: 5
+    batch_size: 1024
+    epochs: 200
     freeze_rb_layer: true
     optimizer:
       lr: 0.0005
@@ -103,8 +117,8 @@ training:
       type: cosine
   stage_1:
     asd_dataset_path: dev_scripts/datasets/asd_dataset_GW150914.hdf5
-    batch_size: 128
-    epochs: 5
+    batch_size: 1024
+    epochs: 50
     freeze_rb_layer: true
     optimizer:
       lr: 1.0e-05
