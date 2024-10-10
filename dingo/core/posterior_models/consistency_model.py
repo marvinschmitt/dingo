@@ -10,7 +10,7 @@ class ConsistencyModel(Base):
     Class for consistency model.
     """
     def __init__(self, **kwargs):
-        self.total_steps = 10000  # FIXME: hardcoded
+        self.total_steps = 1000  # FIXME: hardcoded
         super().__init__(**kwargs)
         
         self.theta_dim = self.metadata["train_settings"]["model"]["posterior_kwargs"]["input_dim"]
