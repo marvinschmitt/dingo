@@ -5,6 +5,8 @@ import torch.nn.functional as F
 from .base_model import Base
 from dingo.core.nn.cfnets import create_cf_model
 
+import matplotlib.pyplot as plt
+
 class ConsistencyModel(Base):
     """
     Class for consistency model.
@@ -21,7 +23,7 @@ class ConsistencyModel(Base):
         self.sigma2 = torch.tensor(self.model_kwargs["posterior_kwargs"]["consistency_args"]["sigma2"], dtype=torch.float32)
         self.current_step = 0
         self.c_huber = torch.tensor(0.00054 * math.sqrt(self.theta_dim), dtype=torch.float32)
-        self.c_huber2 = torch.tensor(self.c_huber**2, dtype=torch.float32)
+        self.c_huber2 = self.c_huber**2
 
         print("init successful!")
 
@@ -29,8 +31,8 @@ class ConsistencyModel(Base):
         model_kwargs = {k: v for k, v in self.model_kwargs.items() if k != "type"}
         if self.initial_weights is not None:
             model_kwargs["initial_weights"] = self.initial_weights
-        self.student = create_cf_model(**model_kwargs)
-        self.network = self.student
+        self.network = create_cf_model(**model_kwargs)
+
         
     def _schedule_discretization(self):
         k_ = math.floor(self.total_steps / (math.log(self.s1 / self.s0) / math.log(2.0) + 1.0))
@@ -77,24 +79,24 @@ class ConsistencyModel(Base):
 
     def loss(self, theta, context_data):
         self.current_step += 1
-        current_num_steps = self._schedule_discretization()
-        discretized_time = self._discretize_time(current_num_steps)
-        p_mean = -1.1
-        p_std = 2.0
+        with torch.enable_grad():
+            current_num_steps = self._schedule_discretization()
+            discretized_time = self._discretize_time(current_num_steps)
+            p_mean = -1.1
+            p_std = 2.0
 
-        p_values = torch.erf((torch.log(discretized_time[1:]) - p_mean) / (math.sqrt(2.0) * p_std)) - torch.erf((torch.log(discretized_time[:-1]) - p_mean) / (math.sqrt(2.0) * p_std))
-        probabilities = torch.clamp(p_values, min=1e-8)
-        times = torch.multinomial(probabilities, theta.size(0), replacement=True)
-        t1 = discretized_time[times]
-        t2 = discretized_time[times + 1]
-        noise = torch.randn_like(theta, device=theta.device)
+            logits = torch.log(torch.erf((torch.log(discretized_time[1:]) - p_mean) / (math.sqrt(2.0) * p_std)) - torch.erf((torch.log(discretized_time[:-1]) - p_mean) / (math.sqrt(2.0) * p_std)))
+            times = torch.distributions.Categorical(logits=logits).sample([theta.size(0)])
+            t1 = discretized_time[times]
+            t2 = discretized_time[times + 1]
+            noise = torch.randn_like(theta, device=theta.device)
 
-        teacher_out = self._forward_train(theta, noise, t1, conditions=context_data)
-        teacher_out = teacher_out.detach()
-        student_out = self._forward_train(theta, noise, t2, conditions=context_data)
+            teacher_out = self._forward_train(theta, noise, t1, conditions=context_data)
+            teacher_out = teacher_out.detach()
+            student_out = self._forward_train(theta, noise, t2, conditions=context_data)
 
-        lam = 1 / (t2 - t1)
-        loss = torch.mean(lam.unsqueeze(1) * (torch.sqrt((teacher_out - student_out)**2 + self.c_huber2) - self.c_huber))
+            lam = 1 / (t2 - t1)
+            loss = torch.mean(lam.unsqueeze(1) * (torch.sqrt((teacher_out - student_out)**2 + self.c_huber2) - self.c_huber))
 
         return loss
 

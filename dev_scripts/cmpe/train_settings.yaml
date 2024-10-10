@@ -53,7 +53,7 @@ model:
     svd:
       num_training_samples: 5_000
       num_validation_samples: 1_000
-      size: 10
+      size: 300
   posterior_kwargs:
     activation: gelu
     batch_norm: true

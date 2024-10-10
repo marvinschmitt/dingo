@@ -83,7 +83,7 @@ model:
     type: DenseResidualNet
   type: flow_matching
 training:
-  evaluate: true
+  evaluate: false
   stage_0:
     asd_dataset_path: dev_scripts/datasets/asd_dataset_GW150914.hdf5
     batch_size: 128

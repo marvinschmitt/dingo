@@ -51,7 +51,7 @@ class ContinuousFlowModel(nn.Module):
         self.theta_with_glu = theta_with_glu
         self.context_with_glu = context_with_glu
 
-        self._use_cache = None
+        self._use_cache = False  # None
         self._cached_context = None
         self._cached_context_embedding = None
 
