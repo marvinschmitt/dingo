@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from .base_model import Base
+from dingo.core.nn.cfnets import create_cf_model
 
 class ConsistencyModel(Base):
     """
@@ -9,10 +10,20 @@ class ConsistencyModel(Base):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
+        self.theta_dim = self.metadata["train_settings"]["model"]["posterior_kwargs"]["input_dim"]
+        self.s0 = self.model_kwargs["posterior_kwargs"]["consistency_args"]["s0"]
+        self.s1 = self.model_kwargs["posterior_kwargs"]["consistency_args"]["s1"]
+        self.tmax = self.model_kwargs["posterior_kwargs"]["consistency_args"]["tmax"]
+        self.epsilon = self.model_kwargs["posterior_kwargs"]["consistency_args"]["epsilon"]
+        self.sigma2 = self.model_kwargs["posterior_kwargs"]["consistency_args"]["sigma2"]
+
+        print("init successful!")
 
     def initialize_network(self):
-        pass
+        model_kwargs = {k: v for k, v in self.model_kwargs.items() if k != "type"}
+        if self.initial_weights is not None:
+            model_kwargs["initial_weights"] = self.initial_weights
+        self.network = create_cf_model(**model_kwargs)
 
     def loss(self, data, context):
         """
@@ -28,7 +39,8 @@ class ConsistencyModel(Base):
         loss: Tensor
             loss for the batch
         """
-        pass
+        
+        return torch.tensor(0.0, requires_grad=True)
 
     def sample_batch(self, *context_data):
         """
