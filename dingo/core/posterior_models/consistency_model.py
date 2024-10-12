@@ -5,8 +5,6 @@ import torch.nn.functional as F
 from .base_model import Base
 from dingo.core.nn.cfnets import create_cf_model
 
-import matplotlib.pyplot as plt
-
 class ConsistencyModel(Base):
     """
     Class for consistency model.
@@ -71,16 +69,17 @@ class ConsistencyModel(Base):
         inp = x + t.unsqueeze(1) * noise
         return self.consistency_function(inp, t, conditions=conditions, **kwargs)
 
-    def _inverse(self, z, conditions=None, steps=10, **kwargs):
-        x = z.clone()
+    def _inverse(self, z, conditions=None, **kwargs):
+        steps = 10
+        x = z.clone() * self.tmax
         discretized_time = torch.flip(self._discretize_time(steps), dims=[-1])
-        t = torch.full((x.shape[0], 1), discretized_time[0], dtype=x.dtype, device=x.device)
+        t = torch.full((*x.shape[:-1], ), discretized_time[0], dtype=x.dtype, device=x.device)
         x = self.consistency_function(x, t, conditions=conditions)
         
         for n in range(1, steps):
             noise = torch.randn_like(x, device=x.device)
             x_n = x + torch.sqrt(torch.square(discretized_time[n]) - self.epsilon**2) * noise
-            t = t.fill_(discretized_time[n])
+            t = torch.full_like(t, discretized_time[n])
             x = self.consistency_function(x_n, t, conditions=conditions)
         return x
 
@@ -114,7 +113,7 @@ class ConsistencyModel(Base):
 
         return loss
 
-    def sample_batch(self, *context_data, batch_size: int = None, steps: int = 10):
+    def sample_batch(self, *context_data, batch_size: int = None):
         """
         Returns num_sample conditional samples for a batch of contexts by solving an ODE
         forwards in time.
@@ -127,9 +126,7 @@ class ConsistencyModel(Base):
             batch_size for sampling. If len(context_data) > 0, we automatically set
             batch_size = len(context_data[0]), so this option is only used for
             unconditional sampling.
-        steps: int = 10
-            Number of ODE steps to take during sampling.
-
+        
         Returns
         -------
         torch.tensor
@@ -146,7 +143,7 @@ class ConsistencyModel(Base):
 
         with torch.no_grad():
             latent_samples = torch.randn((batch_size, self.theta_dim), device=self.s0.device)
-            samples = self._inverse(latent_samples, conditions=context_data[0] if len(context_data) > 0 else None, steps=steps)
+            samples = self._inverse(latent_samples, conditions=context_data[0] if len(context_data) > 0 else None)
 
         self.network.train()
         return samples

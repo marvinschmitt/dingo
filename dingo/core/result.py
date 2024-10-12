@@ -605,6 +605,7 @@ class Result(DingoDataset):
         theta = self._cleaned_samples()
         # delta_log_prob_target is not interesting so never plot it.
         theta = theta.drop(columns="delta_log_prob_target", errors="ignore")
+        theta = theta.drop(columns="log_prob", errors="ignore")
 
         # User option to plot specific parameters.
         if parameters:

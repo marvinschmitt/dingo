@@ -37,11 +37,11 @@ data:
     roll_off: 0.4
     type: tukey
 local:
-  checkpoint_epochs: 10
+  checkpoint_epochs: 250
   device: cpu
   num_workers: 0
   runtime_limits:
-    max_epochs_per_run: 10
+    max_epochs_per_run: 250
     max_time_per_run: 360000
 model:
   embedding_kwargs:

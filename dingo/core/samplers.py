@@ -14,6 +14,7 @@ from dingo.core.posterior_models import Base
 from dingo.core.result import Result
 from dingo.core.result import DATA_KEYS as RESULT_DATA_KEYS
 from dingo.core.utils import torch_detach_to_cpu, IterationTracker
+from dingo.core.posterior_models.consistency_model import ConsistencyModel
 
 # FIXME: transform below should be in core
 from dingo.gw.transforms import SelectStandardizeRepackageParameters
@@ -162,9 +163,11 @@ class Sampler(object):
         # have a flag for whether to calculate the log_prob.
         self.model.network.eval()
         with torch.no_grad():
-            y, log_prob = self.model.sample(
-                *x, get_log_prob=True
-            )
+            if isinstance(self.model, ConsistencyModel):
+                y = self.model.sample(*x, get_log_prob=False)
+                log_prob = torch.zeros((y.shape[0], ), device=y.device)
+            else:
+                y, log_prob = self.model.sample(*x, get_log_prob=True)
 
         samples = self.transform_post({"parameters": y, "log_prob": log_prob})
         result = samples["parameters"]
@@ -222,6 +225,7 @@ class Sampler(object):
         # Apply any post-sampling transformation to sampled parameters (e.g.,
         # correction for t_ref) and represent as DataFrame.
         self._post_process(samples)
+        print(f"samples.shape: {[s.shape for s in samples.values()]}")
         self.samples = pd.DataFrame(samples)
         print(f"Done. This took {time.time() - t0:.1f} s.")
         sys.stdout.flush()
