@@ -21,27 +21,26 @@ data:
     - phi_12
     - phi_jl
     - theta_jn
-    - luminosity_distance
-    - geocent_time
-    - ra
-    - dec
+    - luminosity_distance # d_L
+    - geocent_time # t_c
+    - ra # alpha
+    - dec # delta
     - psi
   ref_time: 1126259462.391
   svd_size_update: 150
   train_fraction: 0.95
-  total_budget: 100_000
-  waveform_dataset_path: dev_scripts/datasets/waveform_dataset.hdf5
+  waveform_dataset_path: datasets/waveform_dataset.hdf5
   window:
     T: 8.0
     f_s: 4096
     roll_off: 0.4
     type: tukey
 local:
-  checkpoint_epochs: 250
-  device: cpu
-  num_workers: 0
+  checkpoint_epochs: 200
+  device: cuda
+  num_workers: 31
   runtime_limits:
-    max_epochs_per_run: 250
+    max_epochs_per_run: 500
     max_time_per_run: 360000
 model:
   embedding_kwargs:
@@ -52,8 +51,8 @@ model:
       - 2048
     output_dim: 2048
     svd:
-      num_training_samples: 5_000
-      num_validation_samples: 1_000
+      num_training_samples: 50000
+      num_validation_samples: 10000
       size: 150
   posterior_kwargs:
     activation: gelu
@@ -63,18 +62,46 @@ model:
     hidden_dims:
       - 4096
       - 4096
+      - 4096
+      - 2048
       - 2048
       - 2048
       - 1024
       - 1024
+      - 1024
+      - 1024
+      - 1024
+      - 1024
+      - 512
+      - 512
+      - 512
+      - 512
+      - 512
+      - 512
       - 512
       - 512
       - 256
       - 256
+      - 256
+      - 256
+      - 256
+      - 256
+      - 256
+      - 256
+      - 256
+      - 256
+      - 128
+      - 128
+      - 128
+      - 128
+      - 128
+      - 64
       - 64
       - 64
       - 32
       - 32
+      - 32
+      - 16
       - 16
       - 16
     sigma_min: 0.001
@@ -98,16 +125,16 @@ model:
     consistency_args:
       s0: 10
       s1: 50
-      tmax: 200
+      tmax: 10 # std of the latent dist. should be larger than target std.
       epsilon: 0.001
-      sigma2: 0.25
+      sigma2: 1.0 # conditions are standardized
   type: consistency_model
 training:
-  evaluate: false
+  evaluate: true
   stage_0:
-    asd_dataset_path: dev_scripts/datasets/asd_dataset_GW150914.hdf5
-    batch_size: 1024
-    epochs: 200
+    asd_dataset_path: datasets/asd_dataset_GW150914.hdf5
+    batch_size: 4096
+    epochs: 400
     freeze_rb_layer: true
     optimizer:
       lr: 0.0005
@@ -116,9 +143,9 @@ training:
       T_max: 400
       type: cosine
   stage_1:
-    asd_dataset_path: dev_scripts/datasets/asd_dataset_GW150914.hdf5
-    batch_size: 1024
-    epochs: 50
+    asd_dataset_path: datasets/asd_dataset_GW150914.hdf5
+    batch_size: 4096
+    epochs: 100
     freeze_rb_layer: true
     optimizer:
       lr: 1.0e-05

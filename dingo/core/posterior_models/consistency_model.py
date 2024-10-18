@@ -1,16 +1,17 @@
 import math
+
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from .base_model import Base
+
 from dingo.core.nn.cfnets import create_cf_model
+
+from .base_model import Base
+
 
 class ConsistencyModel(Base):
     """
     Class for consistency model.
     """
     def __init__(self, **kwargs):
-        # self.total_steps = 1000  # FIXME: hardcoded
         super().__init__(**kwargs)
         
         # Compute number of gradient steps for the consistency model schedulers
